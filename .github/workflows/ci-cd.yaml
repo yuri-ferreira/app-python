@@ -23,7 +23,7 @@ jobs:
           push: true
           tags: |
             ${{secrets.DOCKER_NOMEUSUARIO}}/app-python:latest
-            ${{secrets.DOCKER_NOMEUSUARIO}}/app-python:$${{github.sha}}
+            ${{secrets.DOCKER_NOMEUSUARIO}}/app-python:${{github.sha}}
 
       - name: Checkout Repositório dos manifestos ArgoCD
         uses: actions/checkout@v4
