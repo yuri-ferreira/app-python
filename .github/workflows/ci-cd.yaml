@@ -1,1 +1,54 @@
 name: CI/CD
+
+on:
+  push:
+
+jobs:
+  buildar-e-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{secrets.DOCKER_NOMEUSUARIO}}
+          password: ${{secrets.DOCKER_SENHA}}
+
+      - name: Buildar e push da imagem Docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{secrets.DOCKER_NOMEUSUARIO}}/app-python:latest
+            ${{secrets.DOCKER_NOMEUSUARIO}}/app-python:$${{github.sha}}
+
+      - name: Checkout Repositório dos manifestos ArgoCD
+        uses: actions/checkout@v4
+        with:
+          repository: yuri-ferreira/app-manifests
+          token: ${{secrets.PAT}}
+          path: app-manifests
+
+      - name: Atualizar tag da imagem no manifesto Kubernetes
+        run: |
+          cd app-manifests
+          sed -i 's|image: ${{ secrets.DOCKER_NOMEUSUARIO }}/app-python:.*|image: ${{ secrets.DOCKER_NOMEUSUARIO }}/app-python:${{ github.sha }}|g' deployment.yaml 
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add deployment.yaml
+          git commit -m "Atualizando a imagem do app-pyhon para ${{ github.sha }} 🥳" || echo "Nenhuma mudança 👍"
+
+      - name: Criar Pull Request para o manifesto ArgoCD
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{secrets.PAT}}
+          commit-message: "Atualizar a imagem do python-app para ${{github.sha}}"
+          title: "Atualizar a imagem do python-app para ${{github.sha}}"
+          body: "Esse Pull Request serve para atualizar a imagem Docker do python-app no manifesto Kubernetes :)"
+          branch: atualizar-tag-da-imagem${{github.sha}}
+          base: main
+          delete-branch: true
+          path: app-manifests
