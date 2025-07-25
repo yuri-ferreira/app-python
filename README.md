@@ -5,6 +5,9 @@
 
 1. [Criar a aplicação FastAPI](#1-criar-a-aplicação-fastapi)
 2. [Criar o GitHub Actions (CI/CD)](#2-criar-o-github-actions-cicd)
+3. [Criar manifestos Kubernetes](#3-criar-manifestos-kubernetes)
+4. [Criar o app no ArgoCD](#4-criar-o-app-no-argocd)
+5. [Acessar aplicação localmente e testar alteração do main.py](#5-acessar-aplicação-localmente-e-testar-alteração-do-mainpy)
 
 ---
 
@@ -59,7 +62,7 @@ EXPOSE 8080
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
 ```
 
-Primeiro é definida a imagem base, sendo ela o python com alpine, após é definida a pasta que servirá para os próximos códigos. É feita a instalação das dependencias, sendo elas o próprio FastAPI e o uvicorn, um servidor ASGI necessário quando é utilizado FastAPI. Em sequencia, é copiado o código python escrito anteriormente e é exposta a porta que será utilizada. Agora é feito o mapeamento do uvicorn para que o programa python possa ser executado na porta e endereço correto, essa etapa é importante pois garante que a aplicação possa ser acessada fora do container, quando as portas forem mapeadas.
+Primeiro é definida a imagem base, sendo ela o python com alpine, após é definida a pasta que servirá para os próximos códigos. É feita a instalação das dependências, sendo elas o próprio FastAPI e o uvicorn, um servidor ASGI necessário quando é utilizado FastAPI. Em sequencia, é copiado o código python escrito anteriormente e é exposta a porta que será utilizada. Agora é feito o mapeamento do uvicorn para que o programa python possa ser executado na porta e endereço correto, essa etapa é importante pois garante que a aplicação possa ser acessada fora do container, quando as portas forem mapeadas.
 
 Os manifestos serão produzidos em uma próxima etapa.
 
@@ -119,7 +122,7 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add deployment.yaml
-          git commit -m "Atualizando a imagem do app-pyhon para ${{ github.sha }} 🥳" || echo "Nenhuma mudança 👍"
+          git commit -m "Atualizando a imagem do app-python para ${{ github.sha }} 🥳" || echo "Nenhuma mudança 👍"
 
       - name: Criar Pull Request para o manifesto ArgoCD
         uses: peter-evans/create-pull-request@v6
@@ -134,11 +137,11 @@ jobs:
           path: app-manifests
 ```
 
-#### Para explicação será dividio em módulos:
+#### Para explicação será dividido em módulos:
 
 #### Criar Secrets no repo
 
-Para acessar o Docker Hub ou até mesmo fazer as mudanças no manifest kubernetes é necessário a chave/login/senha de cada um. Para isso, será utilizado os Actions secrets do Github. Para criar um secret, deve-se:
+Para acessar o Docker Hub ou até mesmo fazer as mudanças no manifest kubernetes é necessário a chave/login/senha de cada um. Para isso, será utilizado os Actions secrets do GitHub. Para criar um secret, deve-se:
 
 ![Criando Secrets1](/imgs/criando-secrets.png)
 
